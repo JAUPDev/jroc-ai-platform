@@ -1,0 +1,3154 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# EAS
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+google-services-key.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/*.log
+logs/*.gz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Build outputs
+android/
+ios/
+build/
+coverage/
+build-output.json
+
+# Tests
+__tests__/__snapshots__/
+
+# J-Roc OS 5.0
+
+> **A self-healing mobile OS experience** — Expo React Native app paired with an autonomous CI/CD auto-fix worker system.
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/jroc-os/expo-apk.yml?label=APK%20Build&style=flat-square)](../../actions/workflows/expo-apk.yml)
+[![Auto-Fix Worker](https://img.shields.io/github/actions/workflow/status/your-org/jroc-os/auto-fix-worker.yml?label=Auto-Fix%20Worker&style=flat-square)](../../actions/workflows/auto-fix-worker.yml)
+[![Version](https://img.shields.io/badge/version-5.0.0-7c3aed?style=flat-square)](../../releases)
+[![License](https://img.shields.io/badge/license-MIT-06d6a0?style=flat-square)](./LICENSE)
+
+---
+
+## 📦 Package Contents
+
+```
+jroc-os-5.0/
+├── app/                          # Expo React Native mobile app
+│   ├── app/                      # expo-router file-based routing
+│   │   ├── _layout.tsx           # Root layout (SafeArea, GestureHandler)
+│   │   └── (tabs)/               # Tab navigator screens
+│   │       ├── _layout.tsx       # Tab bar configuration
+│   │       ├── index.tsx         # Home tab
+│   │       ├── workers.tsx       # Workers tab
+│   │       ├── logs.tsx          # Logs tab
+│   │       └── settings.tsx      # Settings tab
+│   ├── components/               # Shared UI components
+│   │   ├── GlassCard.tsx         # Dark glass-morphism card
+│   │   ├── Header.tsx            # App header with actions
+│   │   ├── PrimaryButton.tsx     # Multi-variant button
+│   │   ├── StatusBadge.tsx       # Online/offline/warning badge
+│   │   └── index.ts              # Barrel export
+│   ├── screens/                  # Full screen implementations
+│   │   ├── HomeScreen.tsx        # Dashboard with system stats
+│   │   ├── WorkersScreen.tsx     # Worker toggle & monitoring
+│   │   ├── LogsScreen.tsx        # Live log viewer with filters
+│   │   ├── SettingsScreen.tsx    # App preferences & maintenance
+│   │   └── index.ts              # Barrel export
+│   ├── hooks/                    # Custom React hooks
+│   │   ├── useApi.ts             # Axios request hook
+│   │   ├── useStorage.ts         # MMKV persistent storage
+│   │   └── useTheme.ts           # Theme/color scheme hook
+│   ├── constants/                # App-wide constants
+│   │   ├── Colors.ts             # Design system color palette
+│   │   ├── Layout.ts             # Spacing, radius, font sizes
+│   │   └── index.ts              # Barrel export
+│   ├── utils/                    # Utility functions
+│   │   ├── format.ts             # Date, number, string formatters
+│   │   ├── logger.ts             # Client-side logger
+│   │   └── validation.ts         # Input validators
+│   ├── assets/                   # Images, fonts, icons
+│   ├── app.json                  # Expo app configuration
+│   ├── eas.json                  # EAS Build profiles
+│   ├── babel.config.js           # Babel + path aliases
+│   ├── tsconfig.json             # TypeScript config
+│   └── package.json              # App dependencies
+│
+├── auto-fix-worker/              # Autonomous self-healing worker system
+│   ├── src/
+│   │   ├── index.js              # Entry point (process + signal handlers)
+│   │   ├── head-worker.js        # Orchestrator — poll loop + scheduler
+│   │   ├── fix-engine.js         # Pattern matcher + fix dispatcher
+│   │   ├── github-client.js      # GitHub REST API client
+│   │   ├── notifier.js           # Slack/webhook notifier
+│   │   ├── config.js             # Centralized env config
+│   │   ├── logger.js             # Winston logger (file + console)
+│   │   └── workers/              # Specialized sub-workers
+│   │       ├── build-healer.js   # EAS build failure recovery
+│   │       ├── dep-resolver.js   # npm dependency conflict fixer
+│   │       ├── lint-guard.js     # ESLint auto-fix dispatcher
+│   │       ├── night-patrol.js   # Scheduled deep diagnostic
+│   │       └── type-sentinel.js  # TypeScript error tracker
+│   ├── scripts/
+│   │   ├── run-worker.sh         # Start script with pre-flight checks
+│   │   └── health-check.sh       # System readiness checker
+│   ├── logs/                     # Runtime log output (git-ignored)
+│   ├── .env.example              # Environment variable template
+│   └── package.json              # Worker dependencies
+│
+├── .github/
+│   └── workflows/
+│       ├── expo-apk.yml          # Expo APK/AAB build pipeline
+│       └── auto-fix-worker.yml   # Worker orchestration workflow
+│
+└── README.md                     # This file
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+| Tool | Version |
+|------|---------|
+| Node.js | ≥ 20.x |
+| npm | ≥ 10.x |
+| Expo CLI | ≥ 51.x |
+| EAS CLI | ≥ 7.x |
+
+---
+
+### 1 — Mobile App Setup
+
+```bash
+cd app
+
+# Install dependencies
+npm install
+
+# Start Expo dev server
+npm start
+
+# Run on Android
+npm run android
+
+# Run on iOS
+npm run ios
+```
+
+#### Build a Preview APK
+
+```bash
+# Authenticate with EAS
+npx eas login
+
+# Build
+npx eas build --platform android --profile preview
+```
+
+---
+
+### 2 — Auto-Fix Worker Setup
+
+```bash
+cd auto-fix-worker
+
+# Copy and configure environment
+cp .env.example .env
+# Edit .env with your GITHUB_TOKEN, EXPO_TOKEN, etc.
+
+# Run pre-flight health check
+bash scripts/health-check.sh
+
+# Start the worker
+bash scripts/run-worker.sh
+```
+
+The worker will immediately run a poll cycle and then check every 60 seconds (configurable via `WORKER_POLL_INTERVAL_MS`).
+
+---
+
+### 3 — GitHub Actions Setup
+
+Add the following secrets to your repository (`Settings → Secrets → Actions`):
+
+| Secret | Description |
+|--------|-------------|
+| `EXPO_TOKEN` | Expo access token from expo.dev |
+| `PAT_TOKEN` | GitHub Personal Access Token with `repo` + `workflow` scopes (for auto-commits) |
+| `SLACK_WEBHOOK_URL` | (Optional) Incoming webhook URL for Slack notifications |
+
+Push to `main` or `develop` to trigger the APK build pipeline automatically.
+
+---
+
+## 🤖 Auto-Fix Worker System
+
+The worker continuously monitors your GitHub Actions runs and applies targeted fixes when failures are detected.
+
+### Fix Patterns
+
+| Pattern | Trigger | Fix Applied |
+|---------|---------|------------|
+| `MetroBundlerTimeout` | Metro bundler timeout in logs | Patches `metro.config.js` with `cjs` sourceExt |
+| `GradleMemory` | `OutOfMemoryError` in Gradle | Bumps `gradle.properties` JVM heap to 4 GB |
+| `NodeModulesMissing` | `Cannot find module` errors | Dispatches `reinstall-deps` workflow |
+| `TypeScriptError` | `error TS####` patterns | Creates a GitHub issue for manual review |
+| `EASNetworkError` | Network timeouts on EAS | Waits 5 minutes then re-runs failed jobs |
+
+### Worker Roster
+
+| Worker | Role | Schedule |
+|--------|------|---------|
+| **HeadWorker** | Orchestrates all other workers | Every 30 min (CI) / 60s (local) |
+| **BuildHealer** | Re-runs failed EAS jobs | On each poll cycle |
+| **LintGuard** | ESLint auto-fix dispatcher | On each poll cycle |
+| **DepResolver** | npm peer-dep conflict resolution | On each poll cycle |
+| **TypeSentinel** | TypeScript error tracker | On each poll cycle |
+| **NightPatrol** | Deep diagnostic scan | Daily at 02:00 EDT |
+
+### Manual Triggers
+
+You can trigger any worker action manually via the GitHub Actions UI:
+
+```
+Actions → Auto-Fix Worker → Run workflow
+```
+
+Actions available: `poll`, `reinstall-deps`, `lint-fix`, `night-patrol`, `health-check`
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    GitHub Actions                        │
+│                                                         │
+│  ┌──────────────┐    failure     ┌────────────────────┐ │
+│  │  expo-apk    │ ─────────────► │  auto-fix-worker   │ │
+│  │  .yml        │                │  .yml              │ │
+│  └──────────────┘                └────────────────────┘ │
+│         ▲                                │              │
+│         │ re-run / commit fix            │ poll / fix   │
+│         │                                ▼              │
+│  ┌──────────────┐             ┌─────────────────────┐   │
+│  │  GitHub Repo │◄────────────│    Head Worker      │   │
+│  │  (main)      │  push fix   │    + Fix Engine      │   │
+│  └──────────────┘             └─────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                    Mobile App (Expo)                     │
+│                                                         │
+│  HomeScreen ─── WorkersScreen ─── LogsScreen ─── Settings│
+│       │               │               │                 │
+│  GlassCard      Switch + Badge    Log Viewer            │
+│  StatusBadge    Worker Roster     Level Filter          │
+│  PrimaryButton  Live Stats        Search                │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎨 Design System
+
+| Token | Value |
+|-------|-------|
+| Background | `#0a0a0f` |
+| Surface | `#12121a` |
+| Primary | `#7c3aed` (Purple) |
+| Accent | `#06d6a0` (Green) |
+| Success | `#22c55e` |
+| Warning | `#f59e0b` |
+| Error | `#ef4444` |
+
+---
+
+## 📋 Environment Variables
+
+See `auto-fix-worker/.env.example` for the full list. Key variables:
+
+```env
+GITHUB_TOKEN=ghp_...            # Required: GitHub API access
+GITHUB_OWNER=your-username      # Required: repo owner
+GITHUB_REPO=jroc-os             # Required: repo name
+EXPO_TOKEN=...                  # Required: EAS builds
+WORKER_POLL_INTERVAL_MS=60000   # Poll every 60 seconds
+NOTIFY_WEBHOOK_URL=...          # Optional: Slack notifications
+NIGHT_PATROL_CRON=0 2 * * *    # Default: 02:00 daily
+```
+
+---
+
+## 🔒 Security
+
+- Never commit `.env` to version control (it is `.gitignore`d)
+- Use GitHub Secrets for all CI credentials
+- The auto-fix worker only has write access to files it is explicitly configured to patch
+- All worker commits are tagged with `[auto-fix]` for easy audit trail filtering
+
+---
+
+## 📄 License
+
+MIT © J-Roc OS Project — 2026
+
+name: 🤖 Auto-Fix Worker
+
+on:
+  # Triggered by the head-worker via workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action for the worker to perform'
+        required: true
+        default: 'poll'
+        type: choice
+        options:
+          - poll           # Standard poll cycle
+          - reinstall-deps # Full npm ci + cache bust
+          - lint-fix       # ESLint auto-fix and commit
+          - night-patrol   # Deep diagnostic scan
+          - health-check   # Run health checks and report
+
+      run_id:
+        description: 'Target GitHub Actions run ID (optional)'
+        required: false
+        type: string
+
+      workflow_file:
+        description: 'Workflow file to target (optional)'
+        required: false
+        default: 'expo-apk.yml'
+        type: string
+
+  # Also runs on a schedule for proactive polling
+  schedule:
+    - cron: '*/30 * * * *'   # Every 30 minutes (standard poll)
+    - cron: '0 2 * * *'      # 02:00 EDT — Night Patrol
+
+  # React to failed workflow runs automatically
+  workflow_run:
+    workflows: ['🚀 Expo APK Build']
+    types: [completed]
+
+concurrency:
+  group: auto-fix-worker
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  EXPO_TOKEN:   ${{ secrets.EXPO_TOKEN }}
+
+jobs:
+  # ── Dispatch Router ─────────────────────────────────────────────────────────
+  route:
+    name: 🔀 Route Action
+    runs-on: ubuntu-latest
+    outputs:
+      action: ${{ steps.resolve.outputs.action }}
+
+    steps:
+      - name: Resolve action
+        id: resolve
+        run: |
+          # Determine action based on trigger
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            CONCLUSION="${{ github.event.workflow_run.conclusion }}"
+            if [[ "$CONCLUSION" == "failure" ]]; then
+              echo "action=poll" >> $GITHUB_OUTPUT
+            else
+              echo "action=skip" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # Detect night patrol cron (02:00)
+            HOUR=$(date -u +%H)
+            if [[ "$HOUR" == "06" ]]; then   # 02:00 EDT = 06:00 UTC
+              echo "action=night-patrol" >> $GITHUB_OUTPUT
+            else
+              echo "action=poll" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "action=${{ github.event.inputs.action || 'poll' }}" >> $GITHUB_OUTPUT
+          fi
+
+  # ── Standard Poll ───────────────────────────────────────────────────────────
+  poll:
+    name: 🔍 Poll & Heal
+    runs-on: ubuntu-latest
+    needs: route
+    if: needs.route.outputs.action == 'poll'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: auto-fix-worker/package-lock.json
+
+      - name: Install worker dependencies
+        working-directory: auto-fix-worker
+        run: npm ci --prefer-offline
+
+      - name: Configure worker environment
+        working-directory: auto-fix-worker
+        run: |
+          cat > .env << EOF
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OWNER=${{ github.repository_owner }}
+          GITHUB_REPO=${{ github.event.repository.name }}
+          EXPO_TOKEN=${{ secrets.EXPO_TOKEN }}
+          WORKER_POLL_INTERVAL_MS=0
+          WORKER_MAX_RETRIES=3
+          LOG_LEVEL=info
+          LOG_DIR=./logs
+          NOTIFY_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}
+          NOTIFY_ON_FIX=true
+          NOTIFY_ON_FAILURE=true
+          EOF
+
+      - name: Create logs directory
+        working-directory: auto-fix-worker
+        run: mkdir -p logs
+
+      - name: Run single poll cycle
+        working-directory: auto-fix-worker
+        run: node -e "require('./src/head-worker').pollOnce().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1)})"
+        timeout-minutes: 15
+
+      - name: Upload worker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-logs-${{ github.run_number }}
+          path: auto-fix-worker/logs/
+          retention-days: 14
+
+  # ── Reinstall Dependencies ───────────────────────────────────────────────────
+  reinstall-deps:
+    name: 📦 Reinstall Dependencies
+    runs-on: ubuntu-latest
+    needs: route
+    if: needs.route.outputs.action == 'reinstall-deps'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Remove lock file and node_modules
+        working-directory: app
+        run: |
+          rm -f package-lock.json
+          rm -rf node_modules
+
+      - name: Fresh install
+        working-directory: app
+        run: npm install
+
+      - name: Commit updated lock file
+        working-directory: app
+        run: |
+          git config user.name  "J-Roc OS Bot"
+          git config user.email "bot@jrocos.io"
+          git add package-lock.json
+          git diff --staged --quiet || git commit -m "fix(deps): regenerate package-lock.json [auto-fix]"
+          git push
+
+  # ── Lint Auto-Fix ────────────────────────────────────────────────────────────
+  lint-fix:
+    name: 🧹 Lint Auto-Fix
+    runs-on: ubuntu-latest
+    needs: route
+    if: needs.route.outputs.action == 'lint-fix'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci --prefer-offline
+
+      - name: Run ESLint with auto-fix
+        working-directory: app
+        run: npx eslint . --ext .ts,.tsx --fix || true
+
+      - name: Commit lint fixes
+        working-directory: app
+        run: |
+          git config user.name  "J-Roc OS Bot"
+          git config user.email "bot@jrocos.io"
+          git add -A
+          git diff --staged --quiet || git commit -m "style: auto-fix ESLint violations [auto-fix]"
+          git push
+
+      - name: Verify lint passes after fix
+        working-directory: app
+        run: npx eslint . --ext .ts,.tsx --max-warnings 0
+
+  # ── Night Patrol ─────────────────────────────────────────────────────────────
+  night-patrol:
+    name: 🌙 Night Patrol
+    runs-on: ubuntu-latest
+    needs: route
+    if: needs.route.outputs.action == 'night-patrol'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: auto-fix-worker/package-lock.json
+
+      - name: Install worker dependencies
+        working-directory: auto-fix-worker
+        run: npm ci --prefer-offline
+
+      - name: Configure worker environment
+        working-directory: auto-fix-worker
+        run: |
+          cat > .env << EOF
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OWNER=${{ github.repository_owner }}
+          GITHUB_REPO=${{ github.event.repository.name }}
+          EXPO_TOKEN=${{ secrets.EXPO_TOKEN }}
+          LOG_LEVEL=info
+          LOG_DIR=./logs
+          NOTIFY_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}
+          NOTIFY_ON_FIX=true
+          NOTIFY_ON_FAILURE=true
+          EOF
+
+      - name: Create logs directory
+        working-directory: auto-fix-worker
+        run: mkdir -p logs
+
+      - name: Run Night Patrol
+        working-directory: auto-fix-worker
+        run: node -e "require('./src/head-worker').nightPatrol().then(r=>{console.log(JSON.stringify(r,null,2));process.exit(0)}).catch(e=>{console.error(e);process.exit(1)})"
+        timeout-minutes: 20
+
+      - name: Upload patrol logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: night-patrol-logs-${{ github.run_number }}
+          path: auto-fix-worker/logs/
+          retention-days: 30
+
+  # ── Health Check ─────────────────────────────────────────────────────────────
+  health-check:
+    name: 🏥 Health Check
+    runs-on: ubuntu-latest
+    needs: route
+    if: needs.route.outputs.action == 'health-check'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run health check script
+        working-directory: auto-fix-worker
+        run: bash scripts/health-check.sh
+
+      - name: App dependency audit
+        working-directory: app
+        run: npm audit --audit-level=high || true
+
+      - name: Worker dependency audit
+        working-directory: auto-fix-worker
+        run: npm audit --audit-level=high || true
+
+name: 🚀 Expo APK Build
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'app/**'
+      - '.github/workflows/expo-apk.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'EAS build profile'
+        required: false
+        default: 'preview'
+        type: choice
+        options: [preview, production, development]
+      platform:
+        description: 'Target platform'
+        required: false
+        default: 'android'
+        type: choice
+        options: [android, ios, all]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+jobs:
+  # ── 1. Validate ─────────────────────────────────────────────────────────────
+  validate:
+    name: 🔍 Validate & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npm run lint -- --max-warnings 0
+
+      - name: Run tests
+        run: npm test -- --ci --coverage --passWithNoTests
+
+      - name: Upload coverage
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: app/coverage/
+          retention-days: 7
+
+  # ── 2. Build (Preview APK) ──────────────────────────────────────────────────
+  build-preview:
+    name: 🔨 Build APK (Preview)
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name != 'pull_request'
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build preview APK
+        id: build
+        run: |
+          eas build \
+            --platform ${{ github.event.inputs.platform || 'android' }} \
+            --profile ${{ github.event.inputs.profile || 'preview' }} \
+            --non-interactive \
+            --json \
+            --no-wait \
+            | tee build-output.json
+          echo "build_id=$(jq -r '.[0].id' build-output.json)" >> $GITHUB_OUTPUT
+
+      - name: Wait for build completion
+        run: |
+          eas build:view ${{ steps.build.outputs.build_id }} --json \
+            | jq '.status'
+
+      - name: Get APK download URL
+        id: apk
+        run: |
+          URL=$(eas build:view ${{ steps.build.outputs.build_id }} --json | jq -r '.artifacts.buildUrl')
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "📦 APK URL: $URL"
+
+      - name: Upload build metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-metadata
+          path: app/build-output.json
+          retention-days: 30
+
+      - name: Create GitHub release (main only)
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v5.0.${{ github.run_number }}
+          name: "J-Roc OS v5.0.${{ github.run_number }}"
+          body: |
+            ## 🚀 J-Roc OS 5.0 Build ${{ github.run_number }}
+
+            **APK Download:** ${{ steps.apk.outputs.url }}
+            **Commit:** ${{ github.sha }}
+            **Branch:** ${{ github.ref_name }}
+            **Built:** ${{ github.run_id }}
+
+            ---
+            *Auto-generated by J-Roc OS CI pipeline*
+          draft: false
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── 3. Production AAB ───────────────────────────────────────────────────────
+  build-production:
+    name: 🏭 Build AAB (Production)
+    runs-on: ubuntu-latest
+    needs: validate
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.profile == 'production'
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build production AAB
+        run: |
+          eas build \
+            --platform android \
+            --profile production \
+            --non-interactive
+
+      - name: Notify success
+        if: success()
+        run: echo "✅ Production AAB build complete!"
+
+{
+  "cli": {
+    "version": ">= 7.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "APP_ENV": "preview"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease"
+      },
+      "env": {
+        "APP_ENV": "production"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-services-key.json",
+        "track": "production"
+      }
+    }
+  }
+}
+
+{
+  "name": "jroc-os",
+  "version": "5.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build:apk": "eas build -p android --profile preview",
+    "build:aab": "eas build -p android --profile production",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "jest --watchAll"
+  },
+  "dependencies": {
+    "expo": "~51.0.0",
+    "expo-router": "~3.5.0",
+    "expo-status-bar": "~1.12.1",
+    "expo-splash-screen": "~0.27.0",
+    "expo-font": "~12.0.0",
+    "expo-linking": "~6.3.0",
+    "expo-constants": "~16.0.0",
+    "expo-asset": "~10.0.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-safe-area-context": "4.10.1",
+    "react-native-screens": "3.31.1",
+    "react-native-reanimated": "~3.10.0",
+    "react-native-gesture-handler": "~2.16.0",
+    "@react-navigation/native": "^6.1.17",
+    "@react-navigation/bottom-tabs": "^6.5.20",
+    "@react-navigation/stack": "^6.3.29",
+    "react-native-vector-icons": "^10.1.0",
+    "react-native-linear-gradient": "^2.8.3",
+    "react-native-mmkv": "^2.12.2",
+    "zustand": "^4.5.2",
+    "axios": "^1.7.2",
+    "date-fns": "^3.6.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@types/react": "~18.2.0",
+    "@types/react-native": "~0.73.0",
+    "typescript": "~5.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-expo": "~7.0.0",
+    "jest": "^29.7.0",
+    "jest-expo": "~51.0.0"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  },
+  "private": true
+}
+
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["components/*"],
+      "@screens/*":    ["screens/*"],
+      "@hooks/*":      ["hooks/*"],
+      "@utils/*":      ["utils/*"],
+      "@constants/*":  ["constants/*"],
+      "@assets/*":     ["assets/*"]
+    }
+  }
+}
+
+{
+  "expo": {
+    "name": "J-Roc OS",
+    "slug": "jroc-os",
+    "version": "5.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0f"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.jrocos.mobile",
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a0a0f"
+      },
+      "package": "com.jrocos.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#0a0a0f"
+        }
+      ]
+    ],
+    "scheme": "jrocos",
+    "extra": {
+      "eas": {
+        "projectId": "jroc-os-5-0"
+      }
+    }
+  }
+}
+
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: [
+      'react-native-reanimated/plugin',
+      [
+        'module-resolver',
+        {
+          root: ['./'],
+          alias: {
+            '@components': './components',
+            '@screens':    './screens',
+            '@hooks':      './hooks',
+            '@utils':      './utils',
+            '@constants':  './constants',
+            '@assets':     './assets',
+          },
+        },
+      ],
+    ],
+  };
+};
+
+import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { Colors } from '@constants';
+
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  useEffect(() => {
+    // Hide splash once fonts/assets are ready
+    SplashScreen.hideAsync();
+  }, []);
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Stack
+          screenOptions={{
+            headerShown:     false,
+            contentStyle:    { backgroundColor: Colors.background },
+            animation:       'fade_from_bottom',
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+import WorkersScreen from '@screens/WorkersScreen';
+export default WorkersScreen;
+
+import HomeScreen from '@screens/HomeScreen';
+export default HomeScreen;
+
+import LogsScreen from '@screens/LogsScreen';
+export default LogsScreen;
+
+import { Tabs } from 'expo-router';
+import { Colors, Layout } from '@constants';
+import React from 'react';
+
+export default function TabLayout() {
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown:          false,
+        tabBarActiveTintColor:   Colors.primary,
+        tabBarInactiveTintColor: Colors.textMuted,
+        tabBarStyle: {
+          backgroundColor:    Colors.surface,
+          borderTopColor:     Colors.border,
+          borderTopWidth:     1,
+          height:             Layout.tabBarHeight,
+          paddingBottom:      8,
+          paddingTop:         6,
+        },
+        tabBarLabelStyle: {
+          fontSize:   10,
+          fontWeight: '600',
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{ title: 'Home', tabBarIcon: ({ color }) => <TabIcon emoji="🏠" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="workers"
+        options={{ title: 'Workers', tabBarIcon: ({ color }) => <TabIcon emoji="⚙️" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="logs"
+        options={{ title: 'Logs', tabBarIcon: ({ color }) => <TabIcon emoji="📋" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{ title: 'Settings', tabBarIcon: ({ color }) => <TabIcon emoji="🔧" color={color} /> }}
+      />
+    </Tabs>
+  );
+}
+
+function TabIcon({ emoji, color }: { emoji: string; color: string }) {
+  const { Text } = require('react-native');
+  return <Text style={{ fontSize: 20, opacity: color === Colors.primary ? 1 : 0.5 }}>{emoji}</Text>;
+}
+
+import SettingsScreen from '@screens/SettingsScreen';
+export default SettingsScreen;
+
+import { useColorScheme } from 'react-native';
+import { Colors } from '@constants';
+
+export function useTheme() {
+  const scheme = useColorScheme();
+  // J-Roc OS is always dark-first; light mode gets a softer dark variant
+  const isDark = scheme !== 'light';
+
+  return {
+    isDark,
+    colors: Colors,
+    scheme,
+  };
+}
+
+import { useState, useCallback } from 'react';
+import axios, { AxiosRequestConfig } from 'axios';
+import { API } from '@constants';
+
+interface ApiState<T> {
+  data:    T | null;
+  loading: boolean;
+  error:   string | null;
+}
+
+export function useApi<T = unknown>() {
+  const [state, setState] = useState<ApiState<T>>({
+    data:    null,
+    loading: false,
+    error:   null,
+  });
+
+  const request = useCallback(
+    async (endpoint: string, config?: AxiosRequestConfig): Promise<T | null> => {
+      setState({ data: null, loading: true, error: null });
+      try {
+        const response = await axios.request<T>({
+          baseURL: API.BASE_URL,
+          url:     endpoint,
+          timeout: API.TIMEOUT_MS,
+          ...config,
+        });
+        setState({ data: response.data, loading: false, error: null });
+        return response.data;
+      } catch (err: unknown) {
+        const msg =
+          axios.isAxiosError(err)
+            ? (err.response?.data?.message ?? err.message)
+            : 'Unknown error occurred';
+        setState({ data: null, loading: false, error: msg });
+        return null;
+      }
+    },
+    []
+  );
+
+  const get  = (url: string, cfg?: AxiosRequestConfig) => request(url, { method: 'GET',    ...cfg });
+  const post = (url: string, data: unknown, cfg?: AxiosRequestConfig) =>
+    request(url, { method: 'POST', data, ...cfg });
+  const put  = (url: string, data: unknown, cfg?: AxiosRequestConfig) =>
+    request(url, { method: 'PUT',  data, ...cfg });
+  const del  = (url: string, cfg?: AxiosRequestConfig) => request(url, { method: 'DELETE', ...cfg });
+
+  return { ...state, get, post, put, del };
+}
+
+import { MMKV } from 'react-native-mmkv';
+import { STORAGE_KEYS } from '@constants';
+
+const storage = new MMKV({ id: 'jroc-os-store' });
+
+export function useStorage() {
+  function get<T>(key: string, fallback: T): T {
+    const raw = storage.getString(key);
+    if (raw === undefined) return fallback;
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function set<T>(key: string, value: T): void {
+    storage.set(key, JSON.stringify(value));
+  }
+
+  function remove(key: string): void {
+    storage.delete(key);
+  }
+
+  function clear(): void {
+    storage.clearAll();
+  }
+
+  return { get, set, remove, clear, KEYS: STORAGE_KEYS };
+}
+
+export { Colors }  from './Colors';
+export { Layout }  from './Layout';
+
+export const APP_NAME    = 'J-Roc OS';
+export const APP_VERSION = '5.0.0';
+export const BUILD_DATE  = '2026-09-01';
+
+export const API = {
+  BASE_URL:    'https://api.jrocos.io/v5',
+  TIMEOUT_MS:  12000,
+  RETRY_LIMIT: 3,
+};
+
+export const STORAGE_KEYS = {
+  USER_PREFS:   'jros:user_prefs',
+  AUTH_TOKEN:   'jros:auth_token',
+  THEME:        'jros:theme',
+  ONBOARDING:   'jros:onboarding_done',
+  CACHE_PREFIX: 'jros:cache:',
+};
+
+export const ANIMATION = {
+  FAST:   150,
+  NORMAL: 300,
+  SLOW:   500,
+};
+
+export const Colors = {
+  // Core palette
+  background:     '#0a0a0f',
+  surface:        '#12121a',
+  surfaceAlt:     '#1a1a26',
+  border:         '#2a2a3d',
+
+  // Brand
+  primary:        '#7c3aed',
+  primaryLight:   '#a855f7',
+  primaryDark:    '#5b21b6',
+  accent:         '#06d6a0',
+  accentAlt:      '#00b4d8',
+
+  // Status
+  success:        '#22c55e',
+  warning:        '#f59e0b',
+  error:          '#ef4444',
+  info:           '#3b82f6',
+
+  // Text
+  textPrimary:    '#f1f5f9',
+  textSecondary:  '#94a3b8',
+  textMuted:      '#475569',
+  textInverse:    '#0a0a0f',
+
+  // Gradients (start/end pairs)
+  gradientPurple: ['#7c3aed', '#4f46e5'],
+  gradientGreen:  ['#06d6a0', '#0ea5e9'],
+  gradientFire:   ['#f59e0b', '#ef4444'],
+
+  // Transparent overlays
+  overlay:        'rgba(10,10,15,0.85)',
+  overlayLight:   'rgba(124,58,237,0.12)',
+};
+
+export default Colors;
+
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+
+export const Layout = {
+  window: { width, height },
+  isSmallDevice: width < 375,
+  isLargeDevice: width >= 414,
+
+  spacing: {
+    xs:  4,
+    sm:  8,
+    md:  16,
+    lg:  24,
+    xl:  32,
+    xxl: 48,
+  },
+
+  radius: {
+    sm:   6,
+    md:   12,
+    lg:   18,
+    xl:   24,
+    full: 9999,
+  },
+
+  fontSize: {
+    xs:   11,
+    sm:   13,
+    md:   15,
+    lg:   18,
+    xl:   22,
+    xxl:  28,
+    hero: 36,
+  },
+
+  iconSize: {
+    sm: 16,
+    md: 22,
+    lg: 28,
+    xl: 36,
+  },
+
+  tabBarHeight:    64,
+  headerHeight:    56,
+  statusBarHeight: 44,
+};
+
+export default Layout;
+
+export { default as HomeScreen }     from './HomeScreen';
+export { default as WorkersScreen }  from './WorkersScreen';
+export { default as LogsScreen }     from './LogsScreen';
+export { default as SettingsScreen } from './SettingsScreen';
+
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Switch,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { GlassCard, StatusBadge, Header } from '@components';
+import { Colors, Layout } from '@constants';
+
+interface Worker {
+  id:       string;
+  name:     string;
+  role:     string;
+  status:   'online' | 'offline' | 'warning' | 'error' | 'pending';
+  enabled:  boolean;
+  lastRun:  string;
+  runs:     number;
+  fixes:    number;
+}
+
+const INITIAL_WORKERS: Worker[] = [
+  { id: 'w1', name: 'HeadWorker',      role: 'Orchestrator',       status: 'online',  enabled: true,  lastRun: '2 min ago',  runs: 1482, fixes: 314 },
+  { id: 'w2', name: 'BuildHealer',     role: 'CI Fix Engine',      status: 'online',  enabled: true,  lastRun: '8 min ago',  runs: 876,  fixes: 201 },
+  { id: 'w3', name: 'LintGuard',       role: 'Code Quality',       status: 'online',  enabled: true,  lastRun: '15 min ago', runs: 2104, fixes: 88  },
+  { id: 'w4', name: 'DepResolver',     role: 'Dependency Manager', status: 'warning', enabled: true,  lastRun: '1 hr ago',   runs: 342,  fixes: 57  },
+  { id: 'w5', name: 'TypeSentinel',    role: 'Type Checker',       status: 'online',  enabled: true,  lastRun: '5 min ago',  runs: 998,  fixes: 123 },
+  { id: 'w6', name: 'NightPatrol',     role: 'Scheduled Auditor',  status: 'pending', enabled: false, lastRun: 'Never',      runs: 0,    fixes: 0   },
+];
+
+export default function WorkersScreen() {
+  const [workers, setWorkers] = useState<Worker[]>(INITIAL_WORKERS);
+
+  const toggle = (id: string) => {
+    setWorkers((prev) =>
+      prev.map((w) =>
+        w.id === id
+          ? { ...w, enabled: !w.enabled, status: !w.enabled ? 'online' : 'offline' }
+          : w
+      )
+    );
+  };
+
+  const online  = workers.filter((w) => w.status === 'online').length;
+  const warning = workers.filter((w) => w.status === 'warning').length;
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['bottom']}>
+      <Header title="Workers" subtitle={`${online} active · ${warning} warning`} />
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Summary */}
+        <GlassCard elevated style={styles.summary}>
+          <View style={styles.summaryRow}>
+            {[
+              { label: 'Active',  value: online,                         color: Colors.success },
+              { label: 'Warning', value: warning,                        color: Colors.warning },
+              { label: 'Total',   value: workers.length,                 color: Colors.primary },
+              { label: 'Fixes',   value: workers.reduce((a, w) => a + w.fixes, 0), color: Colors.accent },
+            ].map((s) => (
+              <View key={s.label} style={styles.summaryItem}>
+                <Text style={[styles.summaryVal, { color: s.color }]}>{s.value}</Text>
+                <Text style={styles.summaryLbl}>{s.label}</Text>
+              </View>
+            ))}
+          </View>
+        </GlassCard>
+
+        {/* Worker Cards */}
+        {workers.map((w) => (
+          <GlassCard key={w.id} style={styles.workerCard}>
+            <View style={styles.workerHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.workerName}>{w.name}</Text>
+                <Text style={styles.workerRole}>{w.role}</Text>
+              </View>
+              <Switch
+                value={w.enabled}
+                onValueChange={() => toggle(w.id)}
+                trackColor={{ false: Colors.border, true: Colors.primary }}
+                thumbColor={Colors.textPrimary}
+              />
+            </View>
+            <View style={styles.workerFooter}>
+              <StatusBadge status={w.status} />
+              <Text style={styles.workerMeta}>
+                {w.runs} runs · {w.fixes} fixes · {w.lastRun}
+              </Text>
+            </View>
+          </GlassCard>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe:        { flex: 1, backgroundColor: Colors.background },
+  scroll:      { padding: Layout.spacing.md, gap: Layout.spacing.sm },
+  summary:     { marginBottom: Layout.spacing.sm },
+  summaryRow:  { flexDirection: 'row', justifyContent: 'space-around' },
+  summaryItem: { alignItems: 'center', gap: 4 },
+  summaryVal:  { fontSize: Layout.fontSize.xl, fontWeight: '700' },
+  summaryLbl:  { fontSize: Layout.fontSize.xs, color: Colors.textSecondary, fontWeight: '600' },
+  workerCard:  { gap: Layout.spacing.sm },
+  workerHeader:{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  workerName:  { color: Colors.textPrimary, fontSize: Layout.fontSize.md, fontWeight: '700' },
+  workerRole:  { color: Colors.textSecondary, fontSize: Layout.fontSize.sm, marginTop: 2 },
+  workerFooter:{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  workerMeta:  { color: Colors.textMuted, fontSize: Layout.fontSize.xs },
+});
+
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  RefreshControl,
+  Animated,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { GlassCard, StatusBadge, Header } from '@components';
+import { Colors, Layout, APP_VERSION, BUILD_DATE } from '@constants';
+import { formatDate } from '@utils/format';
+
+interface SystemStat {
+  label: string;
+  value: string;
+  sub?:  string;
+}
+
+const STATS: SystemStat[] = [
+  { label: 'CPU',     value: '12%',   sub: '8-core @ 3.2 GHz' },
+  { label: 'Memory',  value: '4.2 GB', sub: '8 GB total'        },
+  { label: 'Storage', value: '21 GB',  sub: '128 GB available'  },
+  { label: 'Battery', value: '87%',    sub: 'Charging'          },
+];
+
+export default function HomeScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+  const fadeAnim = new Animated.Value(0);
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue:         1,
+      duration:        600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1200);
+  };
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['bottom']}>
+      <Header
+        title="J-Roc OS"
+        subtitle={`v${APP_VERSION} · ${formatDate(BUILD_DATE)}`}
+      />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+          />
+        }
+      >
+        <Animated.View style={{ opacity: fadeAnim }}>
+          {/* System Status */}
+          <GlassCard elevated style={styles.statusCard}>
+            <View style={styles.statusRow}>
+              <Text style={styles.sectionLabel}>System Status</Text>
+              <StatusBadge status="online" />
+            </View>
+            <Text style={styles.statusSub}>All subsystems nominal</Text>
+          </GlassCard>
+
+          {/* Stats Grid */}
+          <Text style={styles.sectionTitle}>System Resources</Text>
+          <View style={styles.grid}>
+            {STATS.map((s) => (
+              <GlassCard key={s.label} style={styles.statCard}>
+                <Text style={styles.statLabel}>{s.label}</Text>
+                <Text style={styles.statValue}>{s.value}</Text>
+                {s.sub && <Text style={styles.statSub}>{s.sub}</Text>}
+              </GlassCard>
+            ))}
+          </View>
+
+          {/* Quick Actions */}
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <GlassCard>
+            {['Run Diagnostics', 'Update Workers', 'Clear Cache', 'System Log'].map(
+              (action, i) => (
+                <View
+                  key={action}
+                  style={[styles.actionRow, i > 0 && styles.actionBorder]}
+                >
+                  <Text style={styles.actionLabel}>{action}</Text>
+                  <Text style={styles.actionChevron}>›</Text>
+                </View>
+              )
+            )}
+          </GlassCard>
+        </Animated.View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe:         { flex: 1, backgroundColor: Colors.background },
+  scroll:       { padding: Layout.spacing.md, gap: Layout.spacing.sm },
+  statusCard:   { marginBottom: Layout.spacing.sm },
+  statusRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionLabel: { color: Colors.textSecondary, fontSize: Layout.fontSize.sm, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8 },
+  sectionTitle: { color: Colors.textSecondary, fontSize: Layout.fontSize.sm, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: Layout.spacing.md, marginBottom: Layout.spacing.xs },
+  statusSub:    { color: Colors.textPrimary, fontSize: Layout.fontSize.md, fontWeight: '500', marginTop: 6 },
+  grid:         { flexDirection: 'row', flexWrap: 'wrap', gap: Layout.spacing.sm },
+  statCard:     { flex: 1, minWidth: '45%' },
+  statLabel:    { color: Colors.textMuted, fontSize: Layout.fontSize.xs, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6 },
+  statValue:    { color: Colors.primaryLight, fontSize: Layout.fontSize.xl, fontWeight: '700', marginTop: 4 },
+  statSub:      { color: Colors.textSecondary, fontSize: Layout.fontSize.xs, marginTop: 2 },
+  actionRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: Layout.spacing.sm },
+  actionBorder: { borderTopWidth: 1, borderTopColor: Colors.border },
+  actionLabel:  { color: Colors.textPrimary, fontSize: Layout.fontSize.md },
+  actionChevron:{ color: Colors.textMuted, fontSize: 20 },
+});
+
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { GlassCard, Header } from '@components';
+import { Colors, Layout, APP_VERSION, BUILD_DATE } from '@constants';
+import { formatDate } from '@utils/format';
+
+interface SettingToggle {
+  key:     string;
+  label:   string;
+  sub:     string;
+  value:   boolean;
+}
+
+export default function SettingsScreen() {
+  const [toggles, setToggles] = useState<SettingToggle[]>([
+    { key: 'autoFix',    label: 'Auto-Fix Workers',     sub: 'Allow workers to self-patch on failure',    value: true  },
+    { key: 'notifications', label: 'Notifications',    sub: 'Push alerts for errors and fixes',          value: true  },
+    { key: 'darkMode',   label: 'Dark Mode',            sub: 'Always use dark interface',                 value: true  },
+    { key: 'telemetry',  label: 'Usage Telemetry',      sub: 'Anonymous crash & performance reports',     value: false },
+    { key: 'nightScan',  label: 'Night Patrol',         sub: 'Run deep diagnostics at 02:00 EDT',        value: true  },
+    { key: 'betaFeatures', label: 'Beta Features',      sub: 'Enable experimental capabilities',          value: false },
+  ]);
+
+  const flip = (key: string) =>
+    setToggles((prev) => prev.map((t) => (t.key === key ? { ...t, value: !t.value } : t)));
+
+  const clearCache = () =>
+    Alert.alert('Clear Cache', 'Remove all cached data?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Clear',  style: 'destructive', onPress: () => {} },
+    ]);
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['bottom']}>
+      <Header title="Settings" />
+      <ScrollView contentContainerStyle={styles.scroll}>
+
+        {/* Toggles */}
+        <Text style={styles.sectionTitle}>Preferences</Text>
+        <GlassCard>
+          {toggles.map((t, i) => (
+            <View key={t.key} style={[styles.row, i > 0 && styles.rowBorder]}>
+              <View style={styles.rowText}>
+                <Text style={styles.rowLabel}>{t.label}</Text>
+                <Text style={styles.rowSub}>{t.sub}</Text>
+              </View>
+              <Switch
+                value={t.value}
+                onValueChange={() => flip(t.key)}
+                trackColor={{ false: Colors.border, true: Colors.primary }}
+                thumbColor={Colors.textPrimary}
+              />
+            </View>
+          ))}
+        </GlassCard>
+
+        {/* Actions */}
+        <Text style={styles.sectionTitle}>Maintenance</Text>
+        <GlassCard>
+          {[
+            { label: 'Clear Cache',          action: clearCache,    color: Colors.warning },
+            { label: 'Force Worker Restart',  action: () => {},      color: Colors.info    },
+            { label: 'Export Logs',           action: () => {},      color: Colors.accent  },
+            { label: 'Reset to Defaults',     action: () => {},      color: Colors.error   },
+          ].map((a, i) => (
+            <TouchableOpacity
+              key={a.label}
+              style={[styles.row, i > 0 && styles.rowBorder]}
+              onPress={a.action}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.rowLabel, { color: a.color }]}>{a.label}</Text>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+          ))}
+        </GlassCard>
+
+        {/* About */}
+        <Text style={styles.sectionTitle}>About</Text>
+        <GlassCard>
+          {[
+            { label: 'Version',    value: APP_VERSION },
+            { label: 'Build Date', value: formatDate(BUILD_DATE) },
+            { label: 'Platform',   value: 'Android / iOS' },
+            { label: 'License',    value: 'MIT' },
+          ].map((item, i) => (
+            <View key={item.label} style={[styles.row, i > 0 && styles.rowBorder]}>
+              <Text style={styles.rowLabel}>{item.label}</Text>
+              <Text style={styles.rowSub}>{item.value}</Text>
+            </View>
+          ))}
+        </GlassCard>
+
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe:         { flex: 1, backgroundColor: Colors.background },
+  scroll:       { padding: Layout.spacing.md, gap: Layout.spacing.xs },
+  sectionTitle: { color: Colors.textSecondary, fontSize: Layout.fontSize.xs, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: Layout.spacing.md, marginBottom: Layout.spacing.xs },
+  row:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: Layout.spacing.sm },
+  rowBorder:    { borderTopWidth: 1, borderTopColor: Colors.border },
+  rowText:      { flex: 1, marginRight: Layout.spacing.sm },
+  rowLabel:     { color: Colors.textPrimary, fontSize: Layout.fontSize.md },
+  rowSub:       { color: Colors.textSecondary, fontSize: Layout.fontSize.xs, marginTop: 2 },
+  chevron:      { color: Colors.textMuted, fontSize: 20 },
+});
+
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Header } from '@components';
+import { Colors, Layout } from '@constants';
+
+type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+
+interface LogEntry {
+  id:        number;
+  timestamp: string;
+  level:     LogLevel;
+  source:    string;
+  message:   string;
+}
+
+const LEVEL_COLOR: Record<LogLevel, string> = {
+  DEBUG: Colors.textMuted,
+  INFO:  Colors.info,
+  WARN:  Colors.warning,
+  ERROR: Colors.error,
+};
+
+const MOCK_LOGS: LogEntry[] = [
+  { id: 1,  timestamp: '09:44:01', level: 'INFO',  source: 'HeadWorker',   message: 'Worker cycle started — 6 agents active' },
+  { id: 2,  timestamp: '09:43:58', level: 'INFO',  source: 'BuildHealer',  message: 'expo-apk.yml run #1482 succeeded in 4m 12s' },
+  { id: 3,  timestamp: '09:43:55', level: 'DEBUG', source: 'LintGuard',    message: 'ESLint pass: 0 errors, 3 warnings' },
+  { id: 4,  timestamp: '09:43:40', level: 'WARN',  source: 'DepResolver',  message: 'react-native-vector-icons: peer dep mismatch (non-fatal)' },
+  { id: 5,  timestamp: '09:43:22', level: 'INFO',  source: 'TypeSentinel', message: 'tsc --noEmit: no type errors found' },
+  { id: 6,  timestamp: '09:42:10', level: 'ERROR', source: 'BuildHealer',  message: 'Retry #1 — metro bundler timeout; patching metro.config.js' },
+  { id: 7,  timestamp: '09:42:08', level: 'INFO',  source: 'BuildHealer',  message: 'Auto-fix applied: added resolver.sourceExts patch' },
+  { id: 8,  timestamp: '09:41:55', level: 'DEBUG', source: 'HeadWorker',   message: 'Heartbeat OK — all workers responding' },
+  { id: 9,  timestamp: '09:40:00', level: 'INFO',  source: 'LintGuard',    message: 'Auto-fixed 2 import ordering issues' },
+  { id: 10, timestamp: '09:38:30', level: 'INFO',  source: 'HeadWorker',   message: 'NightPatrol scheduled for 02:00 EDT' },
+];
+
+const FILTERS: (LogLevel | 'ALL')[] = ['ALL', 'DEBUG', 'INFO', 'WARN', 'ERROR'];
+
+export default function LogsScreen() {
+  const [activeFilter, setActiveFilter] = useState<LogLevel | 'ALL'>('ALL');
+  const [search, setSearch] = useState('');
+  const scrollRef = useRef<ScrollView>(null);
+
+  const filtered = MOCK_LOGS.filter((l) => {
+    const matchLevel  = activeFilter === 'ALL' || l.level === activeFilter;
+    const matchSearch = search === '' || l.message.toLowerCase().includes(search.toLowerCase()) || l.source.toLowerCase().includes(search.toLowerCase());
+    return matchLevel && matchSearch;
+  });
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['bottom']}>
+      <Header title="System Logs" subtitle={`${filtered.length} entries`} />
+
+      {/* Search */}
+      <View style={styles.searchRow}>
+        <TextInput
+          style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Filter logs…"
+          placeholderTextColor={Colors.textMuted}
+        />
+      </View>
+
+      {/* Level Filters */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
+      >
+        {FILTERS.map((f) => (
+          <TouchableOpacity
+            key={f}
+            onPress={() => setActiveFilter(f)}
+            style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
+          >
+            <Text
+              style={[
+                styles.filterLabel,
+                activeFilter === f
+                  ? { color: Colors.textPrimary }
+                  : { color: f === 'ALL' ? Colors.textSecondary : LEVEL_COLOR[f as LogLevel] },
+              ]}
+            >
+              {f}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Log list */}
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.logScroll}
+        style={styles.logContainer}
+      >
+        {filtered.map((entry) => (
+          <View key={entry.id} style={styles.logRow}>
+            <Text style={styles.logTimestamp}>{entry.timestamp}</Text>
+            <Text style={[styles.logLevel, { color: LEVEL_COLOR[entry.level] }]}>
+              {entry.level.padEnd(5)}
+            </Text>
+            <View style={styles.logBody}>
+              <Text style={styles.logSource}>{entry.source}</Text>
+              <Text style={styles.logMessage}>{entry.message}</Text>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe:           { flex: 1, backgroundColor: Colors.background },
+  searchRow:      { paddingHorizontal: Layout.spacing.md, paddingTop: Layout.spacing.sm },
+  searchInput:    { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: Layout.radius.md, paddingHorizontal: Layout.spacing.md, height: 40, color: Colors.textPrimary, fontSize: Layout.fontSize.sm },
+  filterRow:      { paddingHorizontal: Layout.spacing.md, paddingVertical: Layout.spacing.sm, gap: Layout.spacing.xs },
+  filterChip:     { paddingHorizontal: 12, paddingVertical: 6, borderRadius: Layout.radius.full, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border },
+  filterChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  filterLabel:    { fontSize: Layout.fontSize.xs, fontWeight: '700' },
+  logContainer:   { flex: 1 },
+  logScroll:      { padding: Layout.spacing.md, gap: 4 },
+  logRow:         { flexDirection: 'row', gap: 8, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  logTimestamp:   { color: Colors.textMuted, fontSize: 10, fontFamily: 'monospace', paddingTop: 2 },
+  logLevel:       { fontSize: 10, fontFamily: 'monospace', fontWeight: '700', paddingTop: 2, minWidth: 40 },
+  logBody:        { flex: 1 },
+  logSource:      { color: Colors.primaryLight, fontSize: 10, fontFamily: 'monospace', fontWeight: '700' },
+  logMessage:     { color: Colors.textPrimary, fontSize: 11, fontFamily: 'monospace' },
+});
+
+/** Simple runtime validators */
+
+export function isEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+export function isURL(value: string): boolean {
+  try { new URL(value); return true; } catch { return false; }
+}
+
+export function isNonEmpty(value: string): boolean {
+  return value.trim().length > 0;
+}
+
+export function isWithinRange(n: number, min: number, max: number): boolean {
+  return n >= min && n <= max;
+}
+
+export function isValidVersion(v: string): boolean {
+  return /^\d+\.\d+\.\d+$/.test(v);
+}
+
+export function sanitize(input: string): string {
+  return input.replace(/[<>"'`]/g, '').trim();
+}
+
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+const LOG_LEVELS: Record<LogLevel, number> = {
+  debug: 0,
+  info:  1,
+  warn:  2,
+  error: 3,
+};
+
+const MIN_LEVEL: LogLevel = __DEV__ ? 'debug' : 'warn';
+
+function log(level: LogLevel, tag: string, ...args: unknown[]) {
+  if (LOG_LEVELS[level] < LOG_LEVELS[MIN_LEVEL]) return;
+  const ts = new Date().toISOString();
+  const prefix = `[${ts}] [${level.toUpperCase()}] [${tag}]`;
+  switch (level) {
+    case 'debug': console.debug(prefix, ...args); break;
+    case 'info':  console.info(prefix,  ...args); break;
+    case 'warn':  console.warn(prefix,  ...args); break;
+    case 'error': console.error(prefix, ...args); break;
+  }
+}
+
+export const logger = {
+  debug: (tag: string, ...args: unknown[]) => log('debug', tag, ...args),
+  info:  (tag: string, ...args: unknown[]) => log('info',  tag, ...args),
+  warn:  (tag: string, ...args: unknown[]) => log('warn',  tag, ...args),
+  error: (tag: string, ...args: unknown[]) => log('error', tag, ...args),
+};
+
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+
+/** Format an ISO date string to a human-readable date */
+export function formatDate(iso: string, pattern = 'MMM d, yyyy'): string {
+  try { return format(parseISO(iso), pattern); }
+  catch { return iso; }
+}
+
+/** "3 hours ago" style relative time */
+export function timeAgo(iso: string): string {
+  try { return formatDistanceToNow(parseISO(iso), { addSuffix: true }); }
+  catch { return iso; }
+}
+
+/** Format a number as a compact string: 1200 → "1.2K" */
+export function compactNumber(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+/** Clamp a string to a max character length with ellipsis */
+export function truncate(str: string, max = 80): string {
+  return str.length > max ? `${str.slice(0, max - 1)}…` : str;
+}
+
+/** Capitalize first letter */
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Colors, Layout } from '@constants';
+
+type StatusType = 'online' | 'offline' | 'warning' | 'error' | 'pending';
+
+const STATUS_CONFIG: Record<StatusType, { color: string; label: string }> = {
+  online:  { color: Colors.success, label: 'Online'  },
+  offline: { color: Colors.textMuted, label: 'Offline' },
+  warning: { color: Colors.warning, label: 'Warning' },
+  error:   { color: Colors.error,   label: 'Error'   },
+  pending: { color: Colors.info,    label: 'Pending' },
+};
+
+interface StatusBadgeProps {
+  status: StatusType;
+  showLabel?: boolean;
+}
+
+export function StatusBadge({ status, showLabel = true }: StatusBadgeProps) {
+  const cfg = STATUS_CONFIG[status];
+  return (
+    <View style={styles.row}>
+      <View style={[styles.dot, { backgroundColor: cfg.color }]} />
+      {showLabel && (
+        <Text style={[styles.label, { color: cfg.color }]}>{cfg.label}</Text>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  row:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  dot:   { width: 8, height: 8, borderRadius: 4 },
+  label: { fontSize: Layout.fontSize.sm, fontWeight: '600' },
+});
+
+export default StatusBadge;
+
+export { GlassCard }    from './GlassCard';
+export { PrimaryButton } from './PrimaryButton';
+export { StatusBadge }  from './StatusBadge';
+export { Header }       from './Header';
+
+import React from 'react';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ViewStyle,
+  StyleProp,
+} from 'react-native';
+import { Colors, Layout } from '@constants';
+
+interface PrimaryButtonProps {
+  label:     string;
+  onPress:   () => void;
+  loading?:  boolean;
+  disabled?: boolean;
+  variant?:  'primary' | 'accent' | 'ghost' | 'danger';
+  style?:    StyleProp<ViewStyle>;
+  fullWidth?: boolean;
+}
+
+export function PrimaryButton({
+  label,
+  onPress,
+  loading   = false,
+  disabled  = false,
+  variant   = 'primary',
+  style,
+  fullWidth = false,
+}: PrimaryButtonProps) {
+  const isDisabled = disabled || loading;
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.75}
+      onPress={onPress}
+      disabled={isDisabled}
+      style={[
+        styles.base,
+        styles[variant],
+        fullWidth && styles.fullWidth,
+        isDisabled && styles.disabled,
+        style,
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator color={Colors.textPrimary} size="small" />
+      ) : (
+        <Text style={[styles.label, variant === 'ghost' && styles.ghostLabel]}>
+          {label}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  base: {
+    height:         48,
+    borderRadius:   Layout.radius.md,
+    alignItems:     'center',
+    justifyContent: 'center',
+    paddingHorizontal: Layout.spacing.lg,
+  },
+  primary: { backgroundColor: Colors.primary },
+  accent:  { backgroundColor: Colors.accent },
+  ghost: {
+    backgroundColor: 'transparent',
+    borderWidth:     1,
+    borderColor:     Colors.border,
+  },
+  danger: { backgroundColor: Colors.error },
+  fullWidth: { width: '100%' },
+  disabled: { opacity: 0.45 },
+  label: {
+    color:      Colors.textPrimary,
+    fontSize:   Layout.fontSize.md,
+    fontWeight: '600',
+  },
+  ghostLabel: { color: Colors.textSecondary },
+});
+
+export default PrimaryButton;
+
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors, Layout } from '@constants';
+
+interface HeaderProps {
+  title:        string;
+  subtitle?:    string;
+  leftAction?:  { icon: string; onPress: () => void };
+  rightAction?: { icon: string; onPress: () => void };
+}
+
+export function Header({ title, subtitle, leftAction, rightAction }: HeaderProps) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+
+      {leftAction ? (
+        <TouchableOpacity style={styles.action} onPress={leftAction.onPress}>
+          <Text style={styles.actionIcon}>{leftAction.icon}</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.actionPlaceholder} />
+      )}
+
+      <View style={styles.center}>
+        <Text style={styles.title} numberOfLines={1}>{title}</Text>
+        {subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>
+        ) : null}
+      </View>
+
+      {rightAction ? (
+        <TouchableOpacity style={styles.action} onPress={rightAction.onPress}>
+          <Text style={styles.actionIcon}>{rightAction.icon}</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.actionPlaceholder} />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    paddingBottom:   12,
+    paddingHorizontal: Layout.spacing.md,
+    backgroundColor: Colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  center: {
+    flex:      1,
+    alignItems: 'center',
+  },
+  title: {
+    color:      Colors.textPrimary,
+    fontSize:   Layout.fontSize.lg,
+    fontWeight: '700',
+  },
+  subtitle: {
+    color:    Colors.textSecondary,
+    fontSize: Layout.fontSize.xs,
+    marginTop: 2,
+  },
+  action: {
+    width:          40,
+    height:         40,
+    alignItems:     'center',
+    justifyContent: 'center',
+    borderRadius:   Layout.radius.full,
+    backgroundColor: Colors.surfaceAlt,
+  },
+  actionIcon:      { fontSize: 18, color: Colors.textPrimary },
+  actionPlaceholder: { width: 40 },
+});
+
+export default Header;
+
+import React from 'react';
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+} from 'react-native';
+import { Colors, Layout } from '@constants';
+
+interface GlassCardProps {
+  children:  React.ReactNode;
+  style?:    StyleProp<ViewStyle>;
+  padded?:   boolean;
+  elevated?: boolean;
+}
+
+export function GlassCard({
+  children,
+  style,
+  padded   = true,
+  elevated = false,
+}: GlassCardProps) {
+  return (
+    <View
+      style={[
+        styles.card,
+        padded   && styles.padded,
+        elevated && styles.elevated,
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: Colors.surface,
+    borderRadius:    Layout.radius.lg,
+    borderWidth:     1,
+    borderColor:     Colors.border,
+    overflow:        'hidden',
+  },
+  padded: {
+    padding: Layout.spacing.md,
+  },
+  elevated: {
+    shadowColor:   Colors.primary,
+    shadowOffset:  { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius:  12,
+    elevation:     8,
+  },
+});
+
+export default GlassCard;
+
+# ── J-Roc OS Auto-Fix Worker — Environment Variables ──────────────────────────
+# Copy this file to .env and fill in real values before running.
+
+# GitHub
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+GITHUB_OWNER=your-github-username
+GITHUB_REPO=jroc-os
+
+# EAS / Expo
+EXPO_TOKEN=your_expo_access_token
+
+# Worker config
+WORKER_POLL_INTERVAL_MS=60000
+WORKER_MAX_RETRIES=5
+WORKER_RETRY_DELAY_MS=15000
+WORKER_CONCURRENCY=3
+
+# Logging
+LOG_LEVEL=info
+LOG_DIR=./logs
+LOG_MAX_SIZE_MB=10
+LOG_MAX_FILES=7
+
+# Notifications (optional)
+NOTIFY_WEBHOOK_URL=https://hooks.slack.com/services/xxx/yyy/zzz
+NOTIFY_ON_FIX=true
+NOTIFY_ON_FAILURE=true
+
+# Night Patrol (cron)
+NIGHT_PATROL_CRON=0 2 * * *
+NIGHT_PATROL_TZ=America/New_York
+
+{
+  "name": "jroc-os-auto-fix-worker",
+  "version": "5.0.0",
+  "description": "J-Roc OS 5.0 — Autonomous self-healing worker system for CI/CD pipelines",
+  "main": "src/index.js",
+  "scripts": {
+    "start":      "node src/index.js",
+    "start:watch": "nodemon src/index.js",
+    "head":       "node src/head-worker.js",
+    "test":       "jest --forceExit",
+    "lint":       "eslint src/ --ext .js",
+    "logs":       "tail -f logs/worker.log"
+  },
+  "dependencies": {
+    "axios":         "^1.7.2",
+    "dotenv":        "^16.4.5",
+    "winston":       "^3.13.0",
+    "node-schedule": "^2.1.1",
+    "simple-git":    "^3.25.0",
+    "execa":         "^9.3.0",
+    "p-retry":       "^6.2.0",
+    "p-limit":       "^5.0.0",
+    "chalk":         "^5.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "jest":    "^29.7.0",
+    "eslint":  "^8.57.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "private": true
+}
+
+
+/**
+ * J-Roc OS 5.0 — Auto-Fix Worker: GitHub API Client
+ */
+'use strict';
+
+const axios  = require('axios');
+const cfg    = require('./config');
+const logger = require('./logger');
+
+const gh = axios.create({
+  baseURL: cfg.github.apiUrl,
+  headers: {
+    Authorization:        `Bearer ${cfg.github.token}`,
+    Accept:               'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent':         'jroc-os-auto-fix-worker/5.0.0',
+  },
+  timeout: 20_000,
+});
+
+// ── Workflow Runs ─────────────────────────────────────────────────────────────
+
+async function getLatestRuns(workflowFile, perPage = 10) {
+  const { owner, repo } = cfg.github;
+  const res = await gh.get(
+    `/repos/${owner}/${repo}/actions/workflows/${workflowFile}/runs`,
+    { params: { per_page: perPage } }
+  );
+  return res.data.workflow_runs;
+}
+
+async function getRunJobs(runId) {
+  const { owner, repo } = cfg.github;
+  const res = await gh.get(`/repos/${owner}/${repo}/actions/runs/${runId}/jobs`);
+  return res.data.jobs;
+}
+
+async function getRunLogs(runId) {
+  const { owner, repo } = cfg.github;
+  try {
+    const res = await gh.get(
+      `/repos/${owner}/${repo}/actions/runs/${runId}/logs`,
+      { responseType: 'arraybuffer' }
+    );
+    return res.data;
+  } catch (err) {
+    logger.warn('github-client', `Could not fetch logs for run ${runId}: ${err.message}`);
+    return null;
+  }
+}
+
+async function reRunFailedJobs(runId) {
+  const { owner, repo } = cfg.github;
+  await gh.post(`/repos/${owner}/${repo}/actions/runs/${runId}/rerun-failed-jobs`);
+  logger.info('github-client', `Re-run triggered for failed jobs in run #${runId}`);
+}
+
+async function triggerWorkflow(workflowFile, ref = 'main', inputs = {}) {
+  const { owner, repo } = cfg.github;
+  await gh.post(
+    `/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`,
+    { ref, inputs }
+  );
+  logger.info('github-client', `Dispatched workflow ${workflowFile} on ref ${ref}`);
+}
+
+// ── File / Commit Operations ──────────────────────────────────────────────────
+
+async function getFileContent(filePath, ref = 'main') {
+  const { owner, repo } = cfg.github;
+  const res = await gh.get(`/repos/${owner}/${repo}/contents/${filePath}`, {
+    params: { ref },
+  });
+  const content = Buffer.from(res.data.content, 'base64').toString('utf8');
+  return { content, sha: res.data.sha };
+}
+
+async function updateFile(filePath, newContent, message, sha) {
+  const { owner, repo } = cfg.github;
+  const encoded = Buffer.from(newContent, 'utf8').toString('base64');
+  const res = await gh.put(`/repos/${owner}/${repo}/contents/${filePath}`, {
+    message,
+    content: encoded,
+    sha,
+  });
+  logger.info('github-client', `Committed fix to ${filePath}: "${message}"`);
+  return res.data;
+}
+
+// ── Issues ────────────────────────────────────────────────────────────────────
+
+async function createIssue(title, body, labels = ['auto-fix', 'bug']) {
+  const { owner, repo } = cfg.github;
+  const res = await gh.post(`/repos/${owner}/${repo}/issues`, { title, body, labels });
+  logger.info('github-client', `Issue #${res.data.number} created: ${title}`);
+  return res.data;
+}
+
+module.exports = {
+  getLatestRuns,
+  getRunJobs,
+  getRunLogs,
+  reRunFailedJobs,
+  triggerWorkflow,
+  getFileContent,
+  updateFile,
+  createIssue,
+};
+
+/**
+ * J-Roc OS 5.0 — Auto-Fix Worker: Fix Engine
+ * Analyzes failure patterns and applies targeted patches.
+ */
+'use strict';
+
+const gh     = require('./github-client');
+const logger = require('./logger');
+
+// ── Known Fix Patterns ────────────────────────────────────────────────────────
+// Each pattern has a regex to match log output and an async fixer function.
+
+const FIX_PATTERNS = [
+  {
+    name:  'MetroBundlerTimeout',
+    regex: /metro.*timeout|bundler.*timed out/i,
+    async fix(context) {
+      logger.info('fix-engine', 'Applying MetroBundlerTimeout fix — patching metro.config.js');
+      const { content, sha } = await gh.getFileContent('app/metro.config.js').catch(() => ({
+        content: null, sha: null,
+      }));
+      const base = content || `const { getDefaultConfig } = require('expo/metro-config');\nmodule.exports = getDefaultConfig(__dirname);\n`;
+      const patched = base.includes('resolver')
+        ? base
+        : base.replace(
+            /module\.exports\s*=\s*getDefaultConfig\(__dirname\);/,
+            `const config = getDefaultConfig(__dirname);\nconfig.resolver.sourceExts = [...(config.resolver.sourceExts || []), 'cjs'];\nmodule.exports = config;`
+          );
+      if (sha) {
+        await gh.updateFile('app/metro.config.js', patched, 'fix(metro): add cjs sourceExt to resolve bundler timeout', sha);
+      }
+      return 'MetroBundlerTimeout patch applied';
+    },
+  },
+  {
+    name:  'GradleMemory',
+    regex: /java\.lang\.OutOfMemoryError|gradle.*heap|xmx/i,
+    async fix(context) {
+      logger.info('fix-engine', 'Applying GradleMemory fix — bumping Xmx in gradle.properties');
+      try {
+        const { content, sha } = await gh.getFileContent('app/android/gradle.properties');
+        const patched = content
+          .replace(/org\.gradle\.jvmargs=.*/, 'org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError');
+        await gh.updateFile('app/android/gradle.properties', patched, 'fix(gradle): bump JVM heap to 4 GB', sha);
+        return 'GradleMemory patch applied';
+      } catch {
+        return 'GradleMemory fix skipped — gradle.properties not found';
+      }
+    },
+  },
+  {
+    name:  'NodeModulesMissing',
+    regex: /cannot find module|module not found|missing module/i,
+    async fix(context) {
+      logger.info('fix-engine', 'Triggering full dependency reinstall workflow');
+      await gh.triggerWorkflow('auto-fix-worker.yml', 'main', { action: 'reinstall-deps' });
+      return 'NodeModulesMissing fix dispatched';
+    },
+  },
+  {
+    name:  'TypeScriptError',
+    regex: /TS\d{4}:|error TS/i,
+    async fix(context) {
+      logger.info('fix-engine', 'TypeScript error detected — logging for manual review');
+      await gh.createIssue(
+        `[Auto-Fix] TypeScript compile error in run #${context.runId}`,
+        `**Run:** #${context.runId}\n**Job:** ${context.jobName}\n\n` +
+        `Automatic fix is not safe for TypeScript errors. Manual review required.\n\n` +
+        `\`\`\`\n${context.logSnippet || 'No log snippet available'}\n\`\`\``,
+        ['auto-fix', 'typescript', 'needs-review']
+      );
+      return 'TypeScriptError escalated to issue';
+    },
+  },
+  {
+    name:  'EASNetworkError',
+    regex: /ECONNRESET|ETIMEDOUT|network.*error|fetch.*failed/i,
+    async fix(context) {
+      logger.info('fix-engine', 'EAS network error — scheduling retry after 5 min');
+      await new Promise((r) => setTimeout(r, 5 * 60 * 1000));
+      await gh.reRunFailedJobs(context.runId);
+      return 'EASNetworkError retry triggered';
+    },
+  },
+];
+
+// ── Engine API ────────────────────────────────────────────────────────────────
+
+async function analyze(logText, context = {}) {
+  const matches = FIX_PATTERNS.filter((p) => p.regex.test(logText));
+  if (matches.length === 0) {
+    logger.info('fix-engine', `No known pattern matched for run #${context.runId}`);
+    return { fixed: false, reason: 'No matching fix pattern' };
+  }
+
+  const results = [];
+  for (const pattern of matches) {
+    logger.info('fix-engine', `Matched pattern: ${pattern.name}`);
+    try {
+      const result = await pattern.fix({ ...context, logSnippet: logText.slice(0, 1000) });
+      results.push({ pattern: pattern.name, result, success: true });
+    } catch (err) {
+      logger.error('fix-engine', `Fix failed for ${pattern.name}: ${err.message}`);
+      results.push({ pattern: pattern.name, result: err.message, success: false });
+    }
+  }
+
+  return { fixed: results.some((r) => r.success), results };
+}
+
+module.exports = { analyze, FIX_PATTERNS };
+
+/**
+ * J-Roc OS 5.0 — Auto-Fix Worker: Slack / Webhook Notifier
+ */
+'use strict';
+
+const axios  = require('axios');
+const cfg    = require('./config');
+const logger = require('./logger');
+
+async function sendWebhook(payload) {
+  if (!cfg.notify.webhookUrl) return;
+  try {
+    await axios.post(cfg.notify.webhookUrl, payload, { timeout: 8000 });
+  } catch (err) {
+    logger.warn('notifier', `Webhook delivery failed: ${err.message}`);
+  }
+}
+
+async function notifyFix({ runId, workflow, patterns, results }) {
+  if (!cfg.notify.onFix) return;
+  await sendWebhook({
+    text: `✅ *J-Roc OS Auto-Fix* applied ${patterns.length} patch(es) to workflow run #${runId} (${workflow})`,
+    attachments: results.map((r) => ({
+      color:  r.success ? 'good' : 'danger',
+      text:   `*${r.pattern}*: ${r.result}`,
+    })),
+  });
+}
+
+async function notifyFailure({ runId, workflow, reason }) {
+  if (!cfg.notify.onFailure) return;
+  await sendWebhook({
+    text: `🚨 *J-Roc OS Auto-Fix FAILED* on run #${runId} (${workflow})\n> ${reason}`,
+  });
+}
+
+async function notifyNightPatrol({ scanned, issues }) {
+  await sendWebhook({
+    text: `🌙 *Night Patrol complete* — scanned ${scanned} runs, found ${issues} issue(s)`,
+  });
+}
+
+module.exports = { notifyFix, notifyFailure, notifyNightPatrol };
+
+/**
+ * J-Roc OS 5.0 — Auto-Fix Worker: Entry Point
+ */
+'use strict';
+
+const logger = require('./logger');
+const { start } = require('./head-worker');
+
+process.on('uncaughtException',  (err) => logger.error('PROCESS', `Uncaught exception: ${err.message}`, { stack: err.stack }));
+process.on('unhandledRejection', (reason) => logger.error('PROCESS', `Unhandled rejection: ${reason}`));
+
+process.on('SIGTERM', () => { logger.info('PROCESS', 'SIGTERM received — shutting down gracefully'); process.exit(0); });
+process.on('SIGINT',  () => { logger.info('PROCESS', 'SIGINT received — shutting down gracefully');  process.exit(0); });
+
+logger.info('BOOT', '╔══════════════════════════════════════╗');
+logger.info('BOOT', '║   J-Roc OS 5.0 — Auto-Fix Worker    ║');
+logger.info('BOOT', '╚══════════════════════════════════════╝');
+
+start();
+
+/**
+ * J-Roc OS 5.0 — Auto-Fix Worker: Winston Logger
+ */
+'use strict';
+
+const { createLogger, format, transports } = require('winston');
+const path = require('path');
+const fs   = require('fs');
+const cfg  = require('./config');
+
+// Ensure log directory exists
+fs.mkdirSync(cfg.logging.dir, { recursive: true });
+
+const LOG_FILE = path.join(cfg.logging.dir, 'worker.log');
+const ERR_FILE = path.join(cfg.logging.dir, 'error.log');
+
+const consoleFormat = format.combine(
+  format.colorize(),
+  format.timestamp({ format: 'HH:mm:ss' }),
+  format.printf(({ timestamp, level, message, worker, ...meta }) => {
+    const tag = worker ? `[${worker}]` : '';
+    const extra = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+    return `${timestamp} ${level} ${tag} ${message}${extra}`;
+  })
+);
+
+const fileFormat = format.combine(
+  format.timestamp(),
+  format.json()
+);
+
+const logger = createLogger({
+  level: cfg.logging.level,
+  transports: [
+    new transports.Console({ format: consoleFormat }),
+    new transports.File({
+      filename: LOG_FILE,
+      format:   fileFormat,
+      maxsize:  cfg.logging.maxSizeMB * 1024 * 1024,
+      maxFiles: cfg.logging.maxFiles,
+      tailable: true,
+    }),
+    new transports.File({
+      filename: ERR_FILE,
+      level:    'error',
+      format:   fileFormat,
+      maxsize:  cfg.logging.maxSizeMB * 1024 * 1024,
+      maxFiles: 3,
+    }),
+  ],
+});
+
+module.exports = logger;
+
+/**
+ * J-Roc OS 5.0 — Auto-Fix Worker: Centralized Configuration
+ */
+'use strict';
+
+require('dotenv').config();
+
+module.exports = {
+  github: {
+    token:  process.env.GITHUB_TOKEN  || '',
+    owner:  process.env.GITHUB_OWNER  || '',
+    repo:   process.env.GITHUB_REPO   || 'jroc-os',
+    apiUrl: 'https://api.github.com',
+  },
+
+  expo: {
+    token: process.env.EXPO_TOKEN || '',
+  },
+
+  worker: {
+    pollIntervalMs: parseInt(process.env.WORKER_POLL_INTERVAL_MS || '60000', 10),
+    maxRetries:     parseInt(process.env.WORKER_MAX_RETRIES      || '5',     10),
+    retryDelayMs:   parseInt(process.env.WORKER_RETRY_DELAY_MS   || '15000', 10),
+    concurrency:    parseInt(process.env.WORKER_CONCURRENCY       || '3',     10),
+  },
+
+  logging: {
+    level:      process.env.LOG_LEVEL       || 'info',
+    dir:        process.env.LOG_DIR         || './logs',
+    maxSizeMB:  parseInt(process.env.LOG_MAX_SIZE_MB || '10', 10),
+    maxFiles:   parseInt(process.env.LOG_MAX_FILES   || '7',  10),
+  },
+
+  notify: {
+    webhookUrl:    process.env.NOTIFY_WEBHOOK_URL || '',
+    onFix:        (process.env.NOTIFY_ON_FIX     || 'true') === 'true',
+    onFailure:    (process.env.NOTIFY_ON_FAILURE  || 'true') === 'true',
+  },
+
+  nightPatrol: {
+    cron: process.env.NIGHT_PATROL_CRON || '0 2 * * *',
+    tz:   process.env.NIGHT_PATROL_TZ   || 'America/New_York',
+  },
+};
+
+/**
+ * J-Roc OS 5.0 — Head Worker (Orchestrator)
+ * Polls GitHub Actions for failed runs and dispatches the fix engine.
+ */
+'use strict';
+
+const schedule   = require('node-schedule');
+const pLimit     = require('p-limit');
+const gh         = require('./github-client');
+const { analyze } = require('./fix-engine');
+const notifier   = require('./notifier');
+const logger     = require('./logger');
+const cfg        = require('./config');
+
+const WATCHED_WORKFLOWS = ['expo-apk.yml', 'auto-fix-worker.yml'];
+const limit = pLimit(cfg.worker.concurrency);
+
+// Track runs we've already processed to avoid double-fixing
+const processedRuns = new Set();
+
+// ── Core Poll Loop ────────────────────────────────────────────────────────────
+
+async function pollOnce() {
+  logger.info('HeadWorker', '── Poll cycle starting ──');
+
+  for (const workflow of WATCHED_WORKFLOWS) {
+    try {
+      const runs = await gh.getLatestRuns(workflow, 10);
+      const failed = runs.filter(
+        (r) => r.conclusion === 'failure' && !processedRuns.has(r.id)
+      );
+
+      if (failed.length === 0) {
+        logger.debug('HeadWorker', `${workflow}: no new failures`);
+        continue;
+      }
+
+      logger.info('HeadWorker', `${workflow}: ${failed.length} failed run(s) to process`);
+
+      await Promise.all(
+        failed.map((run) =>
+          limit(() => handleFailedRun(run, workflow))
+        )
+      );
+    } catch (err) {
+      logger.error('HeadWorker', `Error polling ${workflow}: ${err.message}`);
+    }
+  }
+
+  logger.info('HeadWorker', '── Poll cycle complete ──');
+}
+
+async function handleFailedRun(run, workflow) {
+  const runId = run.id;
+  processedRuns.add(runId);
+
+  logger.info('HeadWorker', `Processing failed run #${runId} (${workflow})`);
+
+  // Fetch jobs to get the failing job name
+  const jobs    = await gh.getRunJobs(runId).catch(() => []);
+  const failJob = jobs.find((j) => j.conclusion === 'failure');
+  const jobName = failJob?.name || 'unknown';
+
+  // Fetch and decode logs (ZIP buffer)
+  const logBuffer = await gh.getRunLogs(runId);
+  const logText   = logBuffer
+    ? logBuffer.toString('utf8').slice(0, 50_000)  // first 50 KB
+    : '';
+
+  // Run fix engine
+  const context = { runId, workflow, jobName };
+  const outcome = await analyze(logText, context);
+
+  if (outcome.fixed) {
+    logger.info('HeadWorker', `Run #${runId} fixed by ${outcome.results.length} pattern(s)`);
+    await notifier.notifyFix({
+      runId,
+      workflow,
+      patterns: outcome.results.map((r) => r.pattern),
+      results:  outcome.results,
+    });
+  } else {
+    logger.warn('HeadWorker', `Run #${runId} could not be auto-fixed: ${outcome.reason || 'see results'}`);
+    await notifier.notifyFailure({ runId, workflow, reason: outcome.reason || 'No applicable fix' });
+  }
+}
+
+// ── Night Patrol ──────────────────────────────────────────────────────────────
+
+async function nightPatrol() {
+  logger.info('NightPatrol', '🌙 Deep diagnostic scan starting');
+  let scanned = 0;
+  let issues  = 0;
+
+  for (const workflow of WATCHED_WORKFLOWS) {
+    const runs = await gh.getLatestRuns(workflow, 30).catch(() => []);
+    for (const run of runs) {
+      scanned++;
+      if (run.conclusion === 'failure') issues++;
+    }
+  }
+
+  logger.info('NightPatrol', `Scanned ${scanned} runs, found ${issues} failures`);
+  await notifier.notifyNightPatrol({ scanned, issues });
+}
+
+// ── Scheduler ─────────────────────────────────────────────────────────────────
+
+function start() {
+  logger.info('HeadWorker', `J-Roc OS 5.0 Head Worker starting`);
+  logger.info('HeadWorker', `Poll interval: ${cfg.worker.pollIntervalMs}ms | Concurrency: ${cfg.worker.concurrency}`);
+
+  // Immediate first poll
+  pollOnce().catch((err) => logger.error('HeadWorker', `Initial poll failed: ${err.message}`));
+
+  // Recurring poll
+  setInterval(() => {
+    pollOnce().catch((err) => logger.error('HeadWorker', `Poll failed: ${err.message}`));
+  }, cfg.worker.pollIntervalMs);
+
+  // Night Patrol cron
+  schedule.scheduleJob(
+    { rule: cfg.nightPatrol.cron, tz: cfg.nightPatrol.tz },
+    () => nightPatrol().catch((err) => logger.error('NightPatrol', err.message))
+  );
+
+  logger.info('HeadWorker', `Night Patrol scheduled: ${cfg.nightPatrol.cron} (${cfg.nightPatrol.tz})`);
+}
+
+module.exports = { start, pollOnce, nightPatrol };
+
+// Run directly
+if (require.main === module) {
+  start();
+}
+
+/**
+ * J-Roc OS 5.0 — Night Patrol Worker
+ * Runs deep scheduled audits across all workflows.
+ */
+'use strict';
+
+const gh       = require('../github-client');
+const notifier = require('../notifier');
+const logger   = require('../logger');
+
+const NAME = 'NightPatrol';
+
+const WATCHED_WORKFLOWS = ['expo-apk.yml', 'auto-fix-worker.yml'];
+
+async function run() {
+  logger.info(NAME, '🌙 Night Patrol deep scan initiated');
+
+  let totalScanned = 0;
+  let totalFailures = 0;
+  let totalWarnings = 0;
+  const report = [];
+
+  for (const workflow of WATCHED_WORKFLOWS) {
+    const runs = await gh.getLatestRuns(workflow, 30).catch(() => []);
+    const failures = runs.filter((r) => r.conclusion === 'failure');
+    const warnings = runs.filter((r) => r.conclusion === 'timed_out' || r.conclusion === 'cancelled');
+
+    totalScanned  += runs.length;
+    totalFailures += failures.length;
+    totalWarnings += warnings.length;
+
+    report.push({
+      workflow,
+      runs:     runs.length,
+      failures: failures.length,
+      warnings: warnings.length,
+      successRate: runs.length > 0
+        ? `${Math.round(((runs.length - failures.length) / runs.length) * 100)}%`
+        : 'N/A',
+    });
+
+    logger.info(NAME, `${workflow}: ${runs.length} runs, ${failures.length} failures, ${warnings.length} warnings`);
+  }
+
+  // Log summary table
+  logger.info(NAME, '─── Night Patrol Report ───────────────────');
+  for (const row of report) {
+    logger.info(NAME, `${row.workflow}: ${row.successRate} success (${row.runs} runs, ${row.failures} fail, ${row.warnings} warn)`);
+  }
+  logger.info(NAME, `Total: ${totalScanned} runs, ${totalFailures} failures, ${totalWarnings} warnings`);
+  logger.info(NAME, '───────────────────────────────────────────');
+
+  await notifier.notifyNightPatrol({ scanned: totalScanned, issues: totalFailures + totalWarnings });
+
+  return { scanned: totalScanned, failures: totalFailures, warnings: totalWarnings, report };
+}
+
+module.exports = { NAME, run };
+
+/**
+ * J-Roc OS 5.0 — Type Sentinel Worker
+ * Monitors TypeScript compilation health and tracks type error trends.
+ */
+'use strict';
+
+const gh     = require('../github-client');
+const logger = require('../logger');
+
+const NAME = 'TypeSentinel';
+
+const TS_ERROR_PATTERN = /error TS(\d+):\s*(.+)/g;
+
+function extractTsErrors(logText) {
+  const errors = [];
+  let match;
+  while ((match = TS_ERROR_PATTERN.exec(logText)) !== null) {
+    errors.push({ code: match[1], message: match[2].trim() });
+  }
+  return errors;
+}
+
+async function run() {
+  logger.info(NAME, 'Type Sentinel cycle starting');
+  const results = { checked: 0, errorsFound: 0, issuesCreated: 0 };
+
+  const runs = await gh.getLatestRuns('expo-apk.yml', 10);
+  const failed = runs.filter((r) => r.conclusion === 'failure');
+
+  for (const run of failed) {
+    results.checked++;
+    const logBuffer = await gh.getRunLogs(run.id).catch(() => null);
+    if (!logBuffer) continue;
+
+    const logText = logBuffer.toString('utf8');
+    if (!/error TS\d+/i.test(logText)) continue;
+
+    const errors = extractTsErrors(logText);
+    if (errors.length === 0) continue;
+
+    results.errorsFound += errors.length;
+    logger.warn(NAME, `${errors.length} TypeScript error(s) in run #${run.id}`);
+
+    const errorList = errors
+      .slice(0, 20)
+      .map((e) => `- TS${e.code}: ${e.message}`)
+      .join('\n');
+
+    await gh.createIssue(
+      `[TypeSentinel] ${errors.length} TS error(s) in run #${run.id}`,
+      `## TypeScript Compile Errors\n\n**Run:** #${run.id}\n**Count:** ${errors.length}\n\n### Errors\n${errorList}\n\n*Generated by J-Roc OS TypeSentinel worker*`,
+      ['typescript', 'auto-fix', 'needs-review']
+    );
+    results.issuesCreated++;
+  }
+
+  logger.info(NAME, `TypeSentinel complete — checked: ${results.checked}, errors: ${results.errorsFound}, issues: ${results.issuesCreated}`);
+  return results;
+}
+
+module.exports = { NAME, run };
+
+/**
+ * J-Roc OS 5.0 — Lint Guard Worker
+ * Monitors code quality and auto-fixes lint violations where safe.
+ */
+'use strict';
+
+const { execa }  = require('execa');
+const logger     = require('../logger');
+const gh         = require('../github-client');
+
+const NAME = 'LintGuard';
+
+// Safe auto-fixable ESLint rules
+const SAFE_FIX_RULES = [
+  'import/order',
+  'semi',
+  'quotes',
+  'no-trailing-spaces',
+  'eol-last',
+  'comma-dangle',
+];
+
+async function run() {
+  logger.info(NAME, 'Lint Guard cycle starting');
+  const results = { checked: 0, fixed: 0, escalated: 0 };
+
+  const runs = await gh.getLatestRuns('expo-apk.yml', 10);
+  const lintFailed = runs.filter(
+    (r) => r.conclusion === 'failure' && /lint/i.test(r.name || '')
+  );
+
+  results.checked = lintFailed.length;
+
+  for (const run of lintFailed) {
+    const jobs = await gh.getRunJobs(run.id).catch(() => []);
+    const lintJob = jobs.find((j) => /lint/i.test(j.name) && j.conclusion === 'failure');
+    if (!lintJob) continue;
+
+    logger.info(NAME, `Lint failure in run #${run.id} — attempting auto-fix`);
+
+    // Determine if failure was a safe-fixable rule by checking job steps
+    const isSafeFix = lintJob.steps?.some((s) =>
+      SAFE_FIX_RULES.some((rule) => s.name?.includes(rule))
+    );
+
+    if (isSafeFix) {
+      await gh.triggerWorkflow('auto-fix-worker.yml', 'main', { action: 'lint-fix' });
+      results.fixed++;
+      logger.info(NAME, `Safe lint fix dispatched for run #${run.id}`);
+    } else {
+      await gh.createIssue(
+        `[LintGuard] Non-trivial lint failure in run #${run.id}`,
+        `Lint failure detected that is not safe for automatic fixing.\n\nRun: #${run.id}\nJob: ${lintJob.name}`,
+        ['lint', 'needs-review']
+      );
+      results.escalated++;
+    }
+  }
+
+  logger.info(NAME, `Lint Guard complete — checked: ${results.checked}, fixed: ${results.fixed}, escalated: ${results.escalated}`);
+  return results;
+}
+
+module.exports = { NAME, run };
+
+/**
+ * J-Roc OS 5.0 — Build Healer Worker
+ * Specializes in Expo / EAS build failure recovery.
+ */
+'use strict';
+
+const gh     = require('../github-client');
+const logger = require('../logger');
+
+const NAME = 'BuildHealer';
+
+async function run() {
+  logger.info(NAME, 'Build Healer cycle starting');
+
+  const runs = await gh.getLatestRuns('expo-apk.yml', 5);
+  const failed = runs.filter((r) => r.conclusion === 'failure');
+
+  if (failed.length === 0) {
+    logger.info(NAME, 'No failed EAS builds — all good');
+    return { healed: 0 };
+  }
+
+  let healed = 0;
+  for (const run of failed) {
+    logger.info(NAME, `Attempting re-run for failed run #${run.id}`);
+    try {
+      await gh.reRunFailedJobs(run.id);
+      healed++;
+    } catch (err) {
+      logger.error(NAME, `Could not re-run #${run.id}: ${err.message}`);
+    }
+  }
+
+  logger.info(NAME, `Build Healer cycle complete — healed: ${healed}`);
+  return { healed };
+}
+
+module.exports = { NAME, run };
+
+/**
+ * J-Roc OS 5.0 — Dependency Resolver Worker
+ * Detects and resolves npm/yarn dependency conflicts automatically.
+ */
+'use strict';
+
+const gh     = require('../github-client');
+const logger = require('../logger');
+
+const NAME = 'DepResolver';
+
+// Known peer-dep fix patches
+const DEP_FIXES = {
+  'react-native-vector-icons': {
+    match: /peer dep.*react-native-vector-icons|vector-icons.*mismatch/i,
+    fix: async () => ({
+      file: 'app/package.json',
+      transform: (content) => {
+        const pkg = JSON.parse(content);
+        pkg.resolutions = pkg.resolutions || {};
+        pkg.resolutions['react-native-vector-icons'] = '^10.1.0';
+        return JSON.stringify(pkg, null, 2) + '\n';
+      },
+      message: 'fix(deps): add resolution for react-native-vector-icons peer dep',
+    }),
+  },
+  'metro-config': {
+    match: /metro.*config.*not found|cannot resolve metro/i,
+    fix: async () => ({
+      file: 'app/package.json',
+      transform: (content) => {
+        const pkg = JSON.parse(content);
+        pkg.dependencies['metro-config'] = pkg.dependencies['metro-config'] || '^0.80.0';
+        return JSON.stringify(pkg, null, 2) + '\n';
+      },
+      message: 'fix(deps): add explicit metro-config dependency',
+    }),
+  },
+};
+
+async function run() {
+  logger.info(NAME, 'Dependency Resolver cycle starting');
+  const results = { checked: 0, fixed: 0, skipped: 0 };
+
+  const runs = await gh.getLatestRuns('expo-apk.yml', 10);
+  const failed = runs.filter((r) => r.conclusion === 'failure');
+  results.checked = failed.length;
+
+  for (const run of failed) {
+    const logBuffer = await gh.getRunLogs(run.id).catch(() => null);
+    if (!logBuffer) { results.skipped++; continue; }
+    const logText = logBuffer.toString('utf8');
+
+    for (const [pkg, descriptor] of Object.entries(DEP_FIXES)) {
+      if (!descriptor.match.test(logText)) continue;
+
+      logger.info(NAME, `Matched dep issue: ${pkg} in run #${run.id}`);
+      try {
+        const fix = await descriptor.fix();
+        const { content, sha } = await gh.getFileContent(fix.file);
+        const patched = fix.transform(content);
+        await gh.updateFile(fix.file, patched, fix.message, sha);
+        results.fixed++;
+        logger.info(NAME, `Fixed ${pkg} in ${fix.file}`);
+      } catch (err) {
+        logger.error(NAME, `Failed to fix ${pkg}: ${err.message}`);
+        results.skipped++;
+      }
+    }
+  }
+
+  logger.info(NAME, `DepResolver complete — checked: ${results.checked}, fixed: ${results.fixed}, skipped: ${results.skipped}`);
+  return results;
+}
+
+module.exports = { NAME, run };
+
+#!/usr/bin/env bash
+# J-Roc OS 5.0 — Auto-Fix Worker: Health Check
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
+cd "$ROOT_DIR"
+
+echo "🔍 J-Roc OS Worker Health Check"
+echo "─────────────────────────────────"
+
+PASS=0
+FAIL=0
+
+check() {
+  local label="$1"
+  local cmd="$2"
+  if eval "$cmd" &>/dev/null; then
+    echo "  ✅ $label"
+    ((PASS++))
+  else
+    echo "  ❌ $label"
+    ((FAIL++))
+  fi
+}
+
+check "Node.js >= 20"        "node -e 'process.exit(parseInt(process.version.slice(1)) >= 20 ? 0 : 1)'"
+check ".env file present"    "test -f .env"
+check "node_modules present" "test -d node_modules"
+check "logs directory"       "test -d logs"
+check "GITHUB_TOKEN set"     "grep -q 'GITHUB_TOKEN=gh' .env 2>/dev/null"
+check "GITHUB_OWNER set"     "grep -qv 'GITHUB_OWNER=$' .env 2>/dev/null"
+
+echo "─────────────────────────────────"
+echo "  Passed: $PASS | Failed: $FAIL"
+
+if [[ $FAIL -gt 0 ]]; then
+  exit 1
+fi
+
+#!/usr/bin/env bash
+# J-Roc OS 5.0 — Auto-Fix Worker: Start Script
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
+cd "$ROOT_DIR"
+
+echo "╔══════════════════════════════════════╗"
+echo "║   J-Roc OS 5.0 — Auto-Fix Worker    ║"
+echo "╚══════════════════════════════════════╝"
+
+# Check Node version
+NODE_VER=$(node -v | sed 's/v//')
+REQUIRED="20"
+if (( ${NODE_VER%%.*} < REQUIRED )); then
+  echo "❌ Node.js >= v${REQUIRED} is required (found v${NODE_VER})"
+  exit 1
+fi
+
+# Ensure .env exists
+if [[ ! -f ".env" ]]; then
+  echo "⚠️  .env not found — copying from .env.example"
+  cp .env.example .env
+  echo "✏️  Edit .env and fill in your credentials, then re-run this script."
+  exit 1
+fi
+
+# Install deps if needed
+if [[ ! -d "node_modules" ]]; then
+  echo "📦 Installing dependencies…"
+  npm install --prefer-offline
+fi
+
+# Create logs dir
+mkdir -p logs
+
+echo "🚀 Starting Head Worker…"
+node src/index.js
